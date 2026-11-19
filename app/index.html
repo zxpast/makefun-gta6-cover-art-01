@@ -3,56 +3,66 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vice Coast Cover Studio — GTA-style cover art maker</title>
+<title>Vice Coast Cover Studio</title>
 <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-<main class="studio" id="studioMain">
-  <section class="panel-controls" id="editorControls" aria-label="Cover editor">
-    <h1 id="appTitle">Vice Coast Cover Studio</h1>
-    <p id="appTagline">Six-panel poster covers from your photos — sunset grade, chrome title, export and post.</p>
+<main class="app">
+  <section class="controls">
+    <h1>VICE COAST<br>COVER STUDIO</h1>
+    <p class="tagline">Your photos, six panels, one sunset-soaked poster cover.</p>
 
-    <h2 id="stepOne">1 · Photos</h2>
-    <p class="hint" id="photoHint">Start with the two sample photos, or add your own — they never leave your machine.</p>
-    <div class="row" id="sampleRow">
-      <button type="button" class="pick" data-sample="boulevard" id="sampleBoulevard">Boulevard photo</button>
-      <button type="button" class="pick" data-sample="pier" id="samplePier">Pier photo</button>
+    <h2>1 · Photos</h2>
+    <label>Sunset photo <input id="photo-boulevard" type="file" accept="image/*"></label>
+    <label>Pier photo <input id="photo-pier" type="file" accept="image/*"></label>
+    <div class="row">
+      <button id="fill-all" type="button">Fill all panels</button>
+      <button id="surprise" type="button">Surprise me</button>
     </div>
-    <label class="field" id="uploadLabel">Add your photos
-      <input id="uploadInput" type="file" accept="image/*" multiple>
+
+    <h2>2 · Layout &amp; grade</h2>
+    <label>Layout
+      <select id="layout">
+        <option value="sunset-heat">Sunset Heat — six-panel hero</option>
+        <option value="neon-nights">Neon Nights — portrait strip</option>
+        <option value="golden-coast">Golden Coast — tilted snaps</option>
+      </select>
+    </label>
+    <label>Grade
+      <select id="grade">
+        <option value="sunset">Sunset</option>
+        <option value="neon">Neon nights</option>
+        <option value="vice-pink">Vice pink</option>
+        <option value="golden">Golden hour</option>
+      </select>
     </label>
 
-    <h2 id="stepTwo">2 · Layout &amp; grade</h2>
-    <label class="field" id="presetLabel">Cover preset
-      <select id="presetSelect"></select>
-    </label>
-    <div class="pick-row" id="layoutBox" role="group" aria-label="Layout"></div>
-    <div class="pick-row" id="gradeBox" role="group" aria-label="Colour grade"></div>
-    <label class="field" id="sizeLabel">Export size
-      <select id="sizeSelect"></select>
-    </label>
+    <h2>3 · Caption</h2>
+    <label>Title <input id="title" type="text" maxlength="24" value="SUNSET HEAT"></label>
+    <label>Subtitle <input id="subtitle" type="text" maxlength="40" value="six nights in paradise"></label>
+    <label class="check"><input id="stars" type="checkbox" checked> Press quote + five stars</label>
 
-    <h2 id="stepThree">3 · Caption</h2>
-    <label class="field" id="titleLabel">Title
-      <input id="titleInput" type="text" maxlength="24" value="SUNSET HEIST">
-    </label>
-    <label class="field" id="subtitleLabel">Subtitle
-      <input id="subtitleInput" type="text" maxlength="48" value="a fever dream in neon">
-    </label>
+    <h2>4 · Selected panel</h2>
+    <label>Panel <select id="panel"></select></label>
+    <label>Zoom <input id="zoom" type="range" min="1" max="2.5" step="0.05" value="1"> <span id="zoom-val">100%</span></label>
+    <label>Pan sideways <input id="panx" type="range" min="-0.4" max="0.4" step="0.02" value="0"> <span id="panx-val">0</span></label>
+    <label>Pan up / down <input id="pany" type="range" min="-0.4" max="0.4" step="0.02" value="0"> <span id="pany-val">0</span></label>
 
-    <h2 id="stepFour">4 · Panels</h2>
-    <p class="hint" id="panelHint">Pick a panel to crop it, move it, or rewrite its caption chip.</p>
-    <div id="panelList"></div>
-
-    <div class="row" id="actionRow">
-      <button id="surpriseButton" type="button">Surprise me</button>
-      <button id="exportButton" type="button" class="primary">Export PNG</button>
-    </div>
-    <p id="statusLine" role="status"></p>
-    <p class="fineprint" id="originalNote">Original art made on your device. No Rockstar logos, artwork or fonts — lettering is Anton &amp; Pacifico (SIL OFL). Photos stay on your machine, never uploaded. Six panels, six different crops: pick any panel to re-crop it.</p>
+    <h2>5 · Export</h2>
+    <label>Size
+      <select id="size">
+        <option value="square">1080 x 1080 — post</option>
+        <option value="portrait">1080 x 1350 — portrait post</option>
+        <option value="wide">1920 x 1080 — wide</option>
+      </select>
+    </label>
+    <button id="export" type="button" class="primary">Export PNG</button>
+    <p id="status" role="status"></p>
+    <p class="fine">Original art made on your device. No Rockstar logos, artwork or fonts — lettering is Anton &amp; Pacifico (SIL OFL).</p>
   </section>
-  <section class="preview" id="previewPane" aria-label="Live cover preview">
-    <canvas id="coverCanvas" width="1920" height="1080" aria-label="The cover"></canvas>
+  <section class="preview">
+    <canvas id="cover" width="1080" height="1080" aria-label="The cover"></canvas>
+    <p id="preview-note"></p>
   </section>
 </main>
 <script type="module" src="./src/main.js"></script>

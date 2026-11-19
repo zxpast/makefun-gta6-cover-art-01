@@ -1,31 +1,23 @@
-// Fixed scenes for screenshots: ?shot=cover shows the wide hero cover alone,
-// ?shot=editor shows the editor with the new cover in its live preview,
-// ?shot=portrait the Neon Nights strip, ?shot=square the Golden Coast tilt.
-// `preset` picks the cover preset, `title` overrides its words.
-// window.__shotReady is set once the cover has painted with real fonts.
-// The cover canvas itself is the exported art: screenshots show the app's
-// own drawing at the gate's largest size, never an edited composite.
-export async function runShot(shot, query, api) {
-  const preset = query.get('preset') || (
-    shot === 'portrait' ? 'neonNights'
-    : shot === 'square' ? 'goldenCoast'
-    : 'sunsetHeist'
+// Fixed scenes for screenshots.
+//   ?shot=cover&preset=sunset-heat   the cover alone, full viewport
+//   ?shot=cover&preset=neon-nights   the portrait cover alone
+//   ?shot=cover&preset=golden-coast  the tilted-snaps cover alone
+//   ?shot=editor&preset=sunset-heat  the editor with the cover in its live preview
+// `title` / `subtitle` / `grade` override the preset's defaults.
+// window.__shotReady is set once the scene is painted.
+import { COVER_LAYOUTS } from './cover.js';
+
+export async function runShot(shot, query, load) {
+  const preset = query.get('preset') ?? 'sunset-heat';
+  const layout = COVER_LAYOUTS[preset] ?? COVER_LAYOUTS['sunset-heat'];
+  if (shot === 'cover') document.body.classList.add('shot-cover');
+  if (shot === 'editor') document.body.classList.add('shot-editor');
+  await load(
+    preset,
+    query.get('title') ?? layout.title,
+    query.get('subtitle') ?? layout.subtitle,
+    query.get('grade') ?? 'sunset',
   );
-  if (shot === 'cover' || shot === 'portrait' || shot === 'square') {
-    document.body.classList.add('shot-cover');
-  }
-  api.applyPreset(preset);
-  const title = query.get('title');
-  if (title) {
-    const titleInput = document.getElementById('titleInput');
-    titleInput.value = title;
-  }
-  const subtitle = query.get('subtitle');
-  if (subtitle) {
-    const subtitleInput = document.getElementById('subtitleInput');
-    subtitleInput.value = subtitle;
-  }
-  api.redrawPreview();
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   window.__shotReady = true;
 }
