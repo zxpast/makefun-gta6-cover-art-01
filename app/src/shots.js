@@ -1,23 +1,22 @@
-// Fixed scenes for screenshots.
-//   ?shot=cover&preset=sunset-heat   the cover alone, full viewport
-//   ?shot=cover&preset=neon-nights   the portrait cover alone
-//   ?shot=cover&preset=golden-coast  the tilted-snaps cover alone
-//   ?shot=editor&preset=sunset-heat  the editor with the cover in its live preview
-// `title` / `subtitle` / `grade` override the preset's defaults.
-// window.__shotReady is set once the scene is painted.
-import { COVER_LAYOUTS } from './cover.js';
-
+// Fixed scenes for screenshots: ?shot=editor shows the page with a preset
+// loaded; ?shot=cover shows the cover alone. `preset` picks the cover
+// (sunset-heat, neon-nights, golden-coast). The scene is drawn twice —
+// once immediately, once after the Anton / Pacifico webfonts arrive, so
+// the canvas lettering uses the real fonts — and window.__shotReady is
+// set once painted.
 export async function runShot(shot, query, load) {
-  const preset = query.get('preset') ?? 'sunset-heat';
-  const layout = COVER_LAYOUTS[preset] ?? COVER_LAYOUTS['sunset-heat'];
+  const presetId = query.get('preset') ?? 'sunset-heat';
   if (shot === 'cover') document.body.classList.add('shot-cover');
-  if (shot === 'editor') document.body.classList.add('shot-editor');
-  await load(
-    preset,
-    query.get('title') ?? layout.title,
-    query.get('subtitle') ?? layout.subtitle,
-    query.get('grade') ?? 'sunset',
-  );
-  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-  window.__shotReady = true;
+  await load(presetId);
+  try {
+    await document.fonts.ready;
+    await document.fonts.load('150px Anton');
+    await document.fonts.load('34px Pacifico');
+    await load(presetId);
+  } catch {
+    // Fonts are vendored; if they fail, the first draw still stands.
+  }
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    window.__shotReady = true;
+  }));
 }

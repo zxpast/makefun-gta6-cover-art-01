@@ -3,67 +3,54 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vice Coast Cover Studio</title>
+<title>Sunset Heat Cover Studio</title>
 <link rel="stylesheet" href="./style.css">
 </head>
 <body>
 <main class="app">
-  <section class="controls">
-    <h1>VICE COAST<br>COVER STUDIO</h1>
-    <p class="tagline">Your photos, six panels, one sunset-soaked poster cover.</p>
+  <section class="controls" aria-label="Cover controls">
+    <h1>Sunset Heat <span>Cover Studio</span></h1>
+    <p class="tag">Your photos, six panels, one sunset poster — exported as a PNG to share.</p>
 
     <h2>1 · Photos</h2>
-    <label>Sunset photo <input id="photo-boulevard" type="file" accept="image/*"></label>
-    <label>Pier photo <input id="photo-pier" type="file" accept="image/*"></label>
+    <label class="file">Add your photos
+      <input id="photo" type="file" accept="image/*" multiple>
+    </label>
     <div class="row">
       <button id="fill-all" type="button">Fill all panels</button>
+      <button id="spread" type="button">Spread photos</button>
       <button id="surprise" type="button">Surprise me</button>
     </div>
 
-    <h2>2 · Layout &amp; grade</h2>
-    <label>Layout
-      <select id="layout">
-        <option value="sunset-heat">Sunset Heat — six-panel hero</option>
-        <option value="neon-nights">Neon Nights — portrait strip</option>
-        <option value="golden-coast">Golden Coast — tilted snaps</option>
-      </select>
-    </label>
-    <label>Grade
-      <select id="grade">
-        <option value="sunset">Sunset</option>
-        <option value="neon">Neon nights</option>
-        <option value="vice-pink">Vice pink</option>
-        <option value="golden">Golden hour</option>
-      </select>
-    </label>
+    <h2>2 · Layout &amp; Grade</h2>
+    <div id="layouts" class="row wrap" role="group" aria-label="Layout"></div>
+    <div id="grades" class="row wrap" role="group" aria-label="Grade"></div>
 
     <h2>3 · Caption</h2>
     <label>Title <input id="title" type="text" maxlength="24" value="SUNSET HEAT"></label>
     <label>Subtitle <input id="subtitle" type="text" maxlength="40" value="six nights in paradise"></label>
-    <label class="check"><input id="stars" type="checkbox" checked> Press quote + five stars</label>
-
-    <h2>4 · Selected panel</h2>
-    <label>Panel <select id="panel"></select></label>
-    <label>Zoom <input id="zoom" type="range" min="1" max="2.5" step="0.05" value="1"> <span id="zoom-val">100%</span></label>
-    <label>Pan sideways <input id="panx" type="range" min="-0.4" max="0.4" step="0.02" value="0"> <span id="panx-val">0</span></label>
-    <label>Pan up / down <input id="pany" type="range" min="-0.4" max="0.4" step="0.02" value="0"> <span id="pany-val">0</span></label>
-
-    <h2>5 · Export</h2>
-    <label>Size
+    <label>Export size
       <select id="size">
-        <option value="square">1080 x 1080 — post</option>
-        <option value="portrait">1080 x 1350 — portrait post</option>
-        <option value="wide">1920 x 1080 — wide</option>
+        <option value="square">Square post · 1080 x 1080</option>
+        <option value="portrait">Portrait post · 1080 x 1350</option>
+        <option value="wide">Wide banner · 1920 x 1080</option>
       </select>
     </label>
+
+    <h2>4 · Selected Panel</h2>
+    <div id="panels" class="row wrap" role="group" aria-label="Panels"></div>
+    <label>Place <input id="chip-place" type="text" maxlength="24" value="OCEAN DRIVE"></label>
+    <label>Time <input id="chip-time" type="text" maxlength="12" value="6:42 PM"></label>
+    <label>Story <input id="chip-story" type="text" maxlength="32" value="LOOKING FOR TROUBLE"></label>
+    <label>Zoom <input id="zoom" type="range" min="1" max="2.5" step="0.05" value="1"></label>
+    <label>Pan left–right <input id="panx" type="range" min="-1" max="1" step="0.05" value="0"></label>
+    <label>Pan up–down <input id="pany" type="range" min="-1" max="1" step="0.05" value="0"></label>
+
     <button id="export" type="button" class="primary">Export PNG</button>
     <p id="status" role="status"></p>
     <p class="fine">Original art made on your device. No Rockstar logos, artwork or fonts — lettering is Anton &amp; Pacifico (SIL OFL).</p>
   </section>
-  <section class="preview">
-    <canvas id="cover" width="1080" height="1080" aria-label="The cover"></canvas>
-    <p id="preview-note"></p>
-  </section>
+  <canvas id="cover" width="1080" height="1080" aria-label="The cover preview"></canvas>
 </main>
 <script type="module" src="./src/main.js"></script>
 </body>
