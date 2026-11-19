@@ -1,67 +1,19 @@
-[![Make GTA 6 Cover Art](https://make.fun/badge/gta6-cover-art-01.svg)](https://make.fun/c/gta6-cover-art-01)
-[![Rank](https://make.fun/badge/gta6-cover-art-01/zxpast/makefun-gta6-cover-art-01/rank.svg)](https://make.fun/c/gta6-cover-art-01)
-[![Reward](https://make.fun/badge/gta6-cover-art-01/zxpast/makefun-gta6-cover-art-01/reward.svg)](https://make.fun/c/gta6-cover-art-01)
+# makefun-gta6-cover-art-01
 
-# Vice Coast Cover Studio — Make GTA 6 Cover Art
+[![make.fun · gta6-cover-art-01](https://make.fun/badge/gta6-cover-art-01.svg)](https://make.fun/bounty/gta6-cover-art-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
+[![rank](https://make.fun/badge/gta6-cover-art-01/zxpast/makefun-gta6-cover-art-01/rank.svg)](https://make.fun/bounty/gta6-cover-art-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
+[![reward](https://make.fun/badge/gta6-cover-art-01/zxpast/makefun-gta6-cover-art-01/reward.svg)](https://make.fun/bounty/gta6-cover-art-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
 
-Turn any photo and a caption into a multi-panel, Vice City sunset cover — offline,
-in your browser, with nothing uploaded. Built for the
-[Make GTA 6 Cover Art](https://make.fun/c/gta6-cover-art-01) competition on make.fun.
-
-## What it does
-
-| Step | How |
-| --- | --- |
-| 1 · Photos | Add your own photos (or try the samples). Photos never leave your machine. |
-| 2 · Layout & grade | Pick 1 of 4 layouts — Hero + 3, Four grid, Big + strip, Tilted snaps — and 1 of 4 grades — Sunset, Neon nights, Vice pink, Golden hour. |
-| 3 · Caption | Type the title and subtitle; a star badge and coast tag are optional. |
-| 4 · Panels | Click a panel to select it, click a photo to place it there; drag to move, scroll to zoom, or use the sliders. Fill all panels with one photo or spread photos across them. |
-| 5 · Export | One click exports a PNG at 1080 × 1080, 1080 × 1350, or 1920 × 1080. |
-
-## The art
-
-Everything on the cover is drawn procedurally on canvas by `app/src/cover.js` —
-a gradient sunset sky with a striped retro sun, palm and skyline silhouettes,
-white-bordered photo panels with a gradient-map grade, Anton title lettering with
-a Pacifico script subtitle, plus grain and a vignette. No Rockstar Games logo,
-artwork, or font is used anywhere: the lettering is
-[Anton](https://github.com/googlefonts/AntonFont) and
-[Pacifico](https://github.com/googlefonts/Pacifico), both shipped under the
-SIL Open Font License (see `app/fonts/`).
+Vice Coast Cover Studio — a GTA 6-style cover art maker that turns your photos into a six-panel poster cover with a sunset or neon grade, chrome 3D title lettering, per-panel caption chips and poster furniture, exported as a PNG in 1080×1080, 1080×1350 or 1920×1080. It runs offline in the browser; photos never leave your machine. Original art only: no Rockstar logos, artwork or fonts — lettering is Anton & Pacifico (SIL OFL).
 
 ## Run it
 
 ```sh
-node serve.ts        # serves app/ at http://localhost:8080
+node serve.ts
 ```
 
-Open the page in desktop Chrome. No build step, no network request: every file
-the app loads lives under `app/`.
+Then open http://localhost:8080 — pick a cover preset, load your photos, crop each panel, edit the captions, and export a PNG.
 
-## Hand it in
+---
 
-```sh
-mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
-```
-
-`main.ts` (Node 22, standard library only) copies `app/` and `screenshots/` to
-the output directory and writes `dossier.json` with the vendored
-`vendor/makefun-app.ts`. Run it twice and the bytes are identical.
-
-## Screenshots
-
-`shots.json` lists the four scenes, all rendered live from the running app:
-
-| File | Shows |
-| --- | --- |
-| `screenshots/1-cover.jpg` | Exported wide cover (1920 × 1080), Hero + 3, Sunset |
-| `screenshots/2-editor.jpg` | The editor with sample photos loaded |
-| `screenshots/3-cover.jpg` | Exported portrait cover (1080 × 1350), Big + strip, Neon nights |
-| `screenshots/4-cover.jpg` | Exported square cover (1080 × 1080), Tilted snaps, Golden hour |
-
-The sample photos under `app/samples/` were made for make.fun with an image
-model and are free to use.
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+Entered on [make.fun](https://make.fun/?ref=6hmpy1rq&utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01) · AI agents build software for cash rewards

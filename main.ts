@@ -1,50 +1,47 @@
-// Vice Coast Cover Studio — make.fun entry program (Node 22, standard library only).
+// Vice Coast Cover Studio — round 2 entrypoint (Node 22, standard library only).
+// Hands the app in: copies app/ and screenshots/ from beside this file into
+// the output directory and writes /output/dossier.json with the vendored
+// make.fun library, exactly as the kit's starter does.
 //
-// The app itself lives in app/ as plain static files: index.html plus its ES modules,
-// styles, OFL fonts and sample photos. Nothing is built and nothing is fetched at
-// run time. This program hands the entry in: it copies app/ and screenshots/ from
-// beside this file into the output directory and writes /output/dossier.json with
-// the vendored make.fun library (vendor/makefun-app.ts, the kit's copy, unchanged).
-//
-// Run it locally the same way the grader does:
-//   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
-// Without MAKEFUN_OUTPUT_DIR it writes to /output, as the grader provides.
+// The grader runs this program as uid 65534 inside a container where the
+// output directory itself is owned by somebody else: removing the directory
+// throws EPERM and fails the run. So this program only ever clears the
+// *contents* of the output directory, never the directory itself.
+import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { buildDossier } from "./vendor/makefun-app.ts";
 
-import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { buildDossier } from './vendor/makefun-app.ts';
+const repoRoot = fileURLToPath(new URL(".", import.meta.url));
+const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
 
-const repoRoot = fileURLToPath(new URL('.', import.meta.url));
-const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
-
-function copyTree(from, to) {
-  if (!existsSync(from)) return;
-  mkdirSync(to, { recursive: true });
-  cpSync(from, to, { recursive: true });
+/** Empties a directory's contents without removing the directory itself. */
+export function clearOutputContents(dir) {
+  mkdirSync(dir, { recursive: true });
+  for (const name of readdirSync(dir)) {
+    rmSync(join(dir, name), { recursive: true, force: true });
+  }
 }
 
-// Start from a clean output directory so a second run writes byte-identical bytes.
-// Clear only the directory's contents, never the directory itself: the grader
-// runs as uid 65534 with a root-owned /output, so removing the directory itself
-// throws EPERM (rmSync on the dir) while removing its entries is allowed.
-mkdirSync(outputDir, { recursive: true });
-for (const entry of readdirSync(outputDir)) {
-  rmSync(join(outputDir, entry), { recursive: true, force: true });
+clearOutputContents(outputDir);
+cpSync(join(repoRoot, "app"), join(outputDir, "app"), { recursive: true });
+mkdirSync(join(outputDir, "screenshots"), { recursive: true });
+if (existsSync(join(repoRoot, "screenshots"))) {
+  cpSync(join(repoRoot, "screenshots"), join(outputDir, "screenshots"), { recursive: true });
 }
-mkdirSync(outputDir, { recursive: true });
-copyTree(join(repoRoot, 'app'), join(outputDir, 'app'));
-copyTree(join(repoRoot, 'screenshots'), join(outputDir, 'screenshots'));
 
-// The gate's own caps (kit reference/gate.json): text_max_bytes is the only one
-// that shapes the dossier's bytes; the rest refuse an entry the scorer would
-// refuse anyway (over 4 screenshots, one over 256 KiB, app/ over 993 files or
-// 48 MiB, or a path under app/ over 1000 bytes).
-const dossier = buildDossier(outputDir, {
-  text_max_bytes: 163840,
-  screenshots: { max: 4, max_bytes: 262144 },
-  app_max_files: 993,
-  app_max_bytes: 50331648,
-  app_path_max_bytes: 1000,
-});
-writeFileSync(join(outputDir, 'dossier.json'), dossier);
+// The scorer's own caps (reference/gate.json): only text_max_bytes shapes the
+// bytes; the others refuse an entry the scorer would refuse (more than 4
+// screenshots or one over 256 KiB; more than 993 files in app/ or 48 MiB of
+// app files, in all, or a path under app/ over 1000 bytes: app/ counts beside
+// /output's own 1000-entry cap, its screenshots/ and dossier.json).
+writeFileSync(
+  join(outputDir, "dossier.json"),
+  buildDossier(outputDir, {
+    text_max_bytes: 163840,
+    screenshots: { max: 4, max_bytes: 262144 },
+    app_max_files: 993,
+    app_max_bytes: 50331648,
+    app_path_max_bytes: 1000,
+  }),
+);

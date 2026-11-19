@@ -1,42 +1,31 @@
-// Fixed scenes for screenshots: ?shot=editor shows the editor with sample photos
-// loaded; ?shot=cover shows the exported cover alone, edge to edge.
-// Query knobs: layout, grade, size, title, subtitle, assign (photo index per panel,
-// e.g. assign=1,0,1,0). window.__shotReady is set once the scene has painted.
-export async function runShotScene(shot, query, api) {
-  const { state } = api;
-  const pick = (name, fallback) => query.get(name) || fallback;
-
-  state.layout = pick('layout', 'hero');
-  state.grade = pick('grade', 'sunset');
-  state.size = pick('size', 'square');
-  state.title = pick('title', pick('caption', 'SUNSET HEIST'));
-  state.subtitle = pick('subtitle', 'one last ride down the coast');
-  state.showBadge = query.get('badge') !== 'off';
-
-  await api.loadSamples();
-
-  const assign = query.get('assign');
-  if (assign) {
-    const picks = assign.split(',').map((n) => Number(n));
-    state.panels.forEach((panel, i) => {
-      if (Number.isInteger(picks[i]) && picks[i] >= 0 && picks[i] < state.photos.length) {
-        panel.photo = picks[i];
-      }
-    });
+// Fixed scenes for screenshots: ?shot=cover shows the wide hero cover alone,
+// ?shot=editor shows the editor with the new cover in its live preview,
+// ?shot=portrait the Neon Nights strip, ?shot=square the Golden Coast tilt.
+// `preset` picks the cover preset, `title` overrides its words.
+// window.__shotReady is set once the cover has painted with real fonts.
+// The cover canvas itself is the exported art: screenshots show the app's
+// own drawing at the gate's largest size, never an edited composite.
+export async function runShot(shot, query, api) {
+  const preset = query.get('preset') || (
+    shot === 'portrait' ? 'neonNights'
+    : shot === 'square' ? 'goldenCoast'
+    : 'sunsetHeist'
+  );
+  if (shot === 'cover' || shot === 'portrait' || shot === 'square') {
+    document.body.classList.add('shot-cover');
   }
-  const zoom = Number(query.get('zoom'));
-  if (Number.isFinite(zoom) && zoom > 0) {
-    state.panels.forEach((panel) => { panel.zoom = zoom; });
+  api.applyPreset(preset);
+  const title = query.get('title');
+  if (title) {
+    const titleInput = document.getElementById('titleInput');
+    titleInput.value = title;
   }
-
-  // Keep the editor's buttons in sync with the scene, then paint.
-  api.renderTray();
-  api.renderPanelButtons();
-  api.syncPanelControls();
-  if (document.fonts && document.fonts.ready) {
-    try { await document.fonts.ready; } catch { /* system fonts still paint */ }
+  const subtitle = query.get('subtitle');
+  if (subtitle) {
+    const subtitleInput = document.getElementById('subtitleInput');
+    subtitleInput.value = subtitle;
   }
-  api.redraw();
+  api.redrawPreview();
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   window.__shotReady = true;
 }
