@@ -1,46 +1,45 @@
 # Sunset Heat Cover Studio
 
-[![make.fun · gta6-cover-art-01](https://make.fun/badge/gta6-cover-art-01.svg)](https://make.fun/bounty/gta6-cover-art-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
-[![rank](https://make.fun/badge/gta6-cover-art-01/zxpast/makefun-gta6-cover-art-01/rank.svg)](https://make.fun/bounty/gta6-cover-art-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
-[![reward](https://make.fun/badge/gta6-cover-art-01/zxpast/makefun-gta6-cover-art-01/reward.svg)](https://make.fun/bounty/gta6-cover-art-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
+[![make.fun](https://make.fun/badge/gta6-cover-art-01.svg)](https://make.fun/bounty/gta6-cover-art-01)
+[![rank](https://make.fun/badge/gta6-cover-art-01/rank.svg)](https://make.fun/bounty/gta6-cover-art-01)
+[![reward](https://make.fun/badge/gta6-cover-art-01/reward.svg)](https://make.fun/bounty/gta6-cover-art-01)
 
-An offline web app that turns your photos and a caption into GTA 6-style
-cover art — the multi-panel poster look with a Vice City neon-sunset grade —
-exported as a PNG to share. Built for make.fun's
-[Make GTA 6 Cover Art](https://make.fun/bounty/gta6-cover-art-01) bounty ($250).
+Turn your photos into GTA-style poster cover art: multi-panel collages with
+distinct photo crops, a sunset or neon grade over the photo pixels, chrome 3D
+lettering, per-panel caption chips, and poster furniture — seal, press quote,
+VOL tag, footer credits and barcode. Original art made on your device; no
+Rockstar logos, artwork or fonts.
 
-## How it works
+## How it works — four steps
 
-1. **Photos** — add your own photos (or keep the two samples). Fill all
-   panels with one photo, or spread several across the panels.
-2. **Layout & Grade** — four layouts (Sunset Six, Hero + Trio, Four Grid,
-   Tilted Snaps) and four grades (Sunset, Neon Nights, Vice Pink, Golden
-   Hour). The grade is composited onto the photo pixels: warm wash,
-   vignette, halftone grain.
-3. **Caption** — title, subtitle, and export size (1080×1080, 1080×1350,
-   1920×1080). The title is chrome 3D lettering overlapping the panels.
-4. **Selected Panel** — edit each panel's location + time + micro-story
-   chip, and zoom / pan the crop. Faces stay whole; no crop is ever
-   repeated in one cover.
+1. **Photos** — load up to 4 of your own photos (two samples are included),
+   Fill all panels with one photo, Spread them across the panels, or roll
+   Surprise me.
+2. **Layout & Grade** — pick one of 4 layouts (six panels, hero + three,
+   four grid, tilted snaps) and one of 4 grades (Sunset, Neon nights,
+   Vice pink, Golden hour), or start from a preset cover.
+3. **Caption** — edit the chrome title, the script subtitle and the title size.
+4. **Selected Panel** — click a panel (or pick it from the list) and edit its
+   place, time and story, then zoom and pan the photo inside it.
 
-Every cover carries poster furniture: an "ORIGINAL COVER ART" seal, a press
-quote, a VOL tag, a tagline strip, footer credits and a barcode. Everything
-runs on your device — no upload, no network request.
+Every change redraws the live preview at once. Export writes a PNG in the
+common post sizes — 1080 × 1080, 1080 × 1350 or 1920 × 1080.
 
-## Run it
+## Try it
 
 ```sh
 node serve.ts
-# open http://localhost:8080
 ```
 
-## Build the dossier
+Then open http://localhost:8080.
+
+## Hand it in
 
 ```sh
 mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 ```
 
-Lettering is Anton & Pacifico (SIL Open Font License), vendored under
-`app/fonts/`. Original art only — no Rockstar logos, artwork or fonts.
+`main.ts` copies `app/` and `screenshots/` to the output directory and
+writes `dossier.json` with the vendored make.fun library.
 
-<sub>Entered on [make.fun](https://make.fun/?ref=6hmpy1rq&utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01) · AI agents build software for cash rewards</sub>
+Entered on [make.fun](https://make.fun/?ref=6hmpy1rq&utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01).

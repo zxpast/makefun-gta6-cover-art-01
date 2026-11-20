@@ -1,230 +1,294 @@
-// Sunset Heat Cover Studio — the editor page.
-// Four steps: 1 Photos, 2 Layout & Grade, 3 Caption, 4 Selected Panel.
-// The live preview redraws on every change; Export PNG saves the cover in
-// the three common post sizes. A `?shot=` query sets up a fixed scene for
-// a screenshot instead (see ./shots.js).
-import { drawCover, presetState, COVER_SIZES, COVER_LAYOUTS, COVER_GRADES, COVER_PRESETS } from './cover.js';
+// Sunset Heat Cover Studio — editor wiring.
+// Loads the sample photos, applies presets, keeps the live preview in sync
+// with the four editor steps, exports PNGs, and serves fixed ?shot= scenes.
+import { COVER_SIZES, COVER_LAYOUTS, COVER_GRADES, PRESETS, coverFromPreset, drawCover } from './cover.js';
 import { runShot } from './shots.js';
 
 const canvas = document.getElementById('cover');
-const statusEl = document.getElementById('status');
+const status = document.getElementById('status');
 const titleInput = document.getElementById('title');
 const subtitleInput = document.getElementById('subtitle');
-const sizeSelect = document.getElementById('size');
-const layoutRow = document.getElementById('layouts');
-const gradeRow = document.getElementById('grades');
-const panelRow = document.getElementById('panels');
-const chipPlace = document.getElementById('chip-place');
-const chipTime = document.getElementById('chip-time');
-const chipStory = document.getElementById('chip-story');
-const zoomInput = document.getElementById('zoom');
-const panXInput = document.getElementById('panx');
-const panYInput = document.getElementById('pany');
+const titleSizeInput = document.getElementById('title-size');
+const titleSizeOut = document.getElementById('title-size-out');
+const panelSelect = document.getElementById('panel-select');
+const placeInput = document.getElementById('panel-place');
+const timeInput = document.getElementById('panel-time');
+const storyInput = document.getElementById('panel-story');
+const zoomInput = document.getElementById('panel-zoom');
+const zoomOut = document.getElementById('zoom-out');
+const panXInput = document.getElementById('panel-panx');
+const panYInput = document.getElementById('panel-pany');
 
-let state = null;
+let cover = coverFromPreset('sunset-heat');
+let photos = [];
 let selected = 0;
-
-function redraw() {
-  if (!state) return;
-  const size = COVER_SIZES.find((s) => s.id === sizeSelect.value) ?? COVER_SIZES[0];
-  canvas.width = size.w;
-  canvas.height = size.h;
-  drawCover(canvas, state);
-}
-
-function setStatus(text) {
-  statusEl.textContent = text;
-}
-
-function refreshPanelList() {
-  panelRow.innerHTML = '';
-  state.panels.forEach((panel, i) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'chip-btn' + (i === selected ? ' on' : '');
-    b.textContent = `Panel ${i + 1} · ${panel.place}`;
-    b.addEventListener('click', () => {
-      selected = i;
-      syncPanelFields();
-      refreshPanelList();
-      redraw();
-    });
-    panelRow.appendChild(b);
-  });
-}
-
-function syncPanelFields() {
-  const panel = state.panels[selected];
-  if (!panel) return;
-  chipPlace.value = panel.place;
-  chipTime.value = panel.time;
-  chipStory.value = panel.story;
-  zoomInput.value = panel.zoom ?? 1;
-  panXInput.value = panel.panX ?? 0;
-  panYInput.value = panel.panY ?? 0;
-}
-
-function buildOptionRows() {
-  COVER_LAYOUTS.forEach((layout) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'chip-btn';
-    b.textContent = layout.label;
-    b.dataset.layout = layout.id;
-    b.addEventListener('click', () => {
-      state.layout = layout.id;
-      const preset = Object.values(COVER_PRESETS).find((p) => p.layout === layout.id);
-      if (preset) {
-        state.panels = preset.panels.map((p) => ({ ...p, zoom: 1, panX: 0, panY: 0 }));
-        state.grade = preset.grade;
-        state.title = preset.title;
-        state.subtitle = preset.subtitle;
-        titleInput.value = state.title;
-        subtitleInput.value = state.subtitle;
-        syncGradeRow();
-      }
-      selected = 0;
-      syncPanelFields();
-      refreshPanelList();
-      syncLayoutRow();
-      redraw();
-    });
-    layoutRow.appendChild(b);
-  });
-  COVER_GRADES.forEach((grade) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'chip-btn';
-    b.textContent = grade.label;
-    b.dataset.grade = grade.id;
-    b.addEventListener('click', () => {
-      state.grade = grade.id;
-      syncGradeRow();
-      redraw();
-    });
-    gradeRow.appendChild(b);
-  });
-}
-
-function syncLayoutRow() {
-  layoutRow.querySelectorAll('button').forEach((b) => {
-    b.classList.toggle('on', b.dataset.layout === state.layout);
-  });
-}
-
-function syncGradeRow() {
-  gradeRow.querySelectorAll('button').forEach((b) => {
-    b.classList.toggle('on', b.dataset.grade === state.grade);
-  });
-}
+let shotMode = '';
 
 /** Loads an image from a URL, resolving once it can be drawn. */
 export function loadImage(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error(`cannot load ${url}`));
+    img.onerror = reject;
     img.src = url;
   });
 }
 
+function setStatus(text) {
+  status.textContent = text;
+}
+
+function syncPanelControls() {
+  const p = cover.panels[selected];
+  if (!p) return;
+  panelSelect.value = String(selected);
+  placeInput.value = p.place;
+  timeInput.value = p.time;
+  storyInput.value = p.story;
+  zoomInput.value = String(p.zoom);
+  zoomOut.textContent = `${p.zoom.toFixed(2)}×`;
+  panXInput.value = String(p.panX);
+  panYInput.value = String(p.panY);
+}
+
+function rebuildPanelSelect() {
+  panelSelect.innerHTML = '';
+  cover.panels.forEach((p, i) => {
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = `Panel ${i + 1} — ${p.place} ${p.time}`;
+    panelSelect.appendChild(opt);
+  });
+  if (selected >= cover.panels.length) selected = 0;
+  syncPanelControls();
+}
+
+function markActive(container, value) {
+  container.querySelectorAll('button').forEach((b) => {
+    b.classList.toggle('active', b.dataset.value === value);
+  });
+}
+
+function buildButtonRow(container, entries, current, onPick) {
+  container.innerHTML = '';
+  for (const [value, label] of entries) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.value = value;
+    b.textContent = label;
+    b.addEventListener('click', () => {
+      onPick(value);
+      markActive(container, value);
+      draw();
+    });
+    container.appendChild(b);
+  }
+  markActive(container, current);
+}
+
+function buildControls() {
+  buildButtonRow(
+    document.getElementById('layouts'),
+    Object.entries(COVER_LAYOUTS).map(([k, v]) => [k, v.label]),
+    cover.layout,
+    (v) => setLayout(v),
+  );
+  buildButtonRow(
+    document.getElementById('grades'),
+    Object.entries(COVER_GRADES).map(([k, v]) => [k, v.label]),
+    cover.grade,
+    (v) => { cover.grade = v; },
+  );
+  buildButtonRow(
+    document.getElementById('presets'),
+    Object.entries(PRESETS).map(([k, v]) => [k, v.label]),
+    cover.preset,
+    (v) => { applyPresetSync(v); },
+  );
+  buildButtonRow(
+    document.getElementById('sizes'),
+    Object.entries(COVER_SIZES).map(([k, v]) => [k, `${v.w} × ${v.h}`]),
+    cover.size,
+    (v) => { cover.size = v; sizeCanvas(); },
+  );
+  rebuildPanelSelect();
+}
+
+function setLayout(name) {
+  const rects = COVER_LAYOUTS[name].rects;
+  const preset = PRESETS[cover.preset];
+  cover.layout = name;
+  // Keep the preset's panels where they fit; extend or trim to the layout.
+  const panels = [];
+  for (let i = 0; i < rects.length; i++) {
+    panels.push({ ...(cover.panels[i] ?? preset.panels[i % preset.panels.length]) });
+  }
+  cover.panels = panels;
+  if (selected >= panels.length) selected = 0;
+  rebuildPanelSelect();
+}
+
+function sizeCanvas() {
+  const s = COVER_SIZES[cover.size];
+  canvas.width = s.w;
+  canvas.height = s.h;
+  canvas.style.width = '';
+  canvas.style.height = '';
+}
+
+function draw() {
+  // The title-size slider scales the chrome title inside its band.
+  const scaled = { ...cover, titleScale: Number(titleSizeInput.value) / 100 };
+  drawCover(canvas, photos, scaled);
+}
+
+async function applyPreset(name) {
+  cover = coverFromPreset(name);
+  selected = 0;
+  titleInput.value = cover.title;
+  subtitleInput.value = cover.subtitle;
+  titleSizeInput.value = '100';
+  titleSizeOut.textContent = '100%';
+  if (!shotMode) sizeCanvas();
+  buildControls();
+}
+
+function applyPresetSync(name) {
+  cover = coverFromPreset(name);
+  selected = 0;
+  titleInput.value = cover.title;
+  subtitleInput.value = cover.subtitle;
+  titleSizeInput.value = '100';
+  titleSizeOut.textContent = '100%';
+  sizeCanvas();
+  buildControls();
+  setStatus(`Preset ${PRESETS[name].label} loaded.`);
+}
+
+// The ?shot=cover path: clamp the canvas backing store so its long side is
+// at most 1280 px (the gate's cap), and pin the element to exactly that
+// size so an element screenshot captures the clamped size, not the viewport.
+function clampCoverCanvas() {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const scale = Math.min(1, 1280 / Math.max(vw, vh));
+  canvas.width = Math.round(vw * scale);
+  canvas.height = Math.round(vh * scale);
+  canvas.style.width = `${canvas.width}px`;
+  canvas.style.height = `${canvas.height}px`;
+}
+
+const api = {
+  applyPreset,
+  draw,
+  clampCoverCanvas,
+};
+
 async function loadSamples() {
-  return Promise.all([
+  const [boulevard, pier] = await Promise.all([
     loadImage('samples/boulevard.jpg'),
     loadImage('samples/pier.jpg'),
   ]);
+  photos = [boulevard, pier];
 }
 
-function applyPreset(presetId) {
-  state = presetState(presetId, state.photos);
-  titleInput.value = state.title;
-  subtitleInput.value = state.subtitle;
-  selected = 0;
-  syncPanelFields();
-  refreshPanelList();
-  syncLayoutRow();
-  syncGradeRow();
-  redraw();
-}
-
-document.getElementById('photo').addEventListener('change', async (e) => {
+document.getElementById('photos').addEventListener('change', async (e) => {
   const files = [...e.target.files].slice(0, 4);
-  if (!files.length) return;
-  const loaded = [];
   for (const file of files) {
-    loaded.push(await loadImage(URL.createObjectURL(file)));
+    const img = await loadImage(URL.createObjectURL(file));
+    photos.push(img);
+    if (photos.length > 4) photos.shift();
   }
-  // Your photos replace the samples, panel by panel, in order.
-  loaded.forEach((img, i) => { state.photos[i] = img; });
-  setStatus(`${loaded.length} photo${loaded.length > 1 ? 's' : ''} loaded — spread across the panels.`);
-  redraw();
+  setStatus(`${photos.length} photo${photos.length === 1 ? '' : 's'} loaded.`);
+  draw();
 });
 
 document.getElementById('fill-all').addEventListener('click', () => {
-  // Fill every panel with the first photo, each with its own crop.
-  state.panels.forEach((panel) => { panel.photo = 0; });
-  setStatus('All panels now use photo 1 — pick a panel to give it another photo.');
-  redraw();
+  cover.panels.forEach((p) => { p.photo = 0; });
+  setStatus('All panels use photo 1.');
+  draw();
 });
 
 document.getElementById('spread').addEventListener('click', () => {
-  state.panels.forEach((panel, i) => { panel.photo = i % state.photos.length; });
+  cover.panels.forEach((p, i) => { p.photo = photos.length ? i % photos.length : 0; });
   setStatus('Photos spread across the panels.');
-  redraw();
+  draw();
 });
 
 document.getElementById('surprise').addEventListener('click', () => {
-  const ids = Object.keys(COVER_PRESETS);
-  const pick = ids[Math.floor(Math.random() * ids.length)];
-  applyPreset(pick);
-  setStatus(`Surprise me: ${COVER_PRESETS[pick].title}.`);
+  const layouts = Object.keys(COVER_LAYOUTS);
+  const grades = Object.keys(COVER_GRADES);
+  const layout = layouts[Math.floor(Math.random() * layouts.length)];
+  cover.grade = grades[Math.floor(Math.random() * grades.length)];
+  setLayout(layout);
+  cover.panels.forEach((p) => {
+    p.photo = photos.length ? Math.floor(Math.random() * photos.length) : 0;
+  });
+  buildControls();
+  setStatus('Surprise me: new layout, grade and photo spread.');
+  draw();
 });
 
-titleInput.addEventListener('input', () => { state.title = titleInput.value; redraw(); });
-subtitleInput.addEventListener('input', () => { state.subtitle = subtitleInput.value; redraw(); });
-sizeSelect.addEventListener('change', redraw);
-chipPlace.addEventListener('input', () => { state.panels[selected].place = chipPlace.value.toUpperCase(); refreshPanelList(); redraw(); });
-chipTime.addEventListener('input', () => { state.panels[selected].time = chipTime.value.toUpperCase(); redraw(); });
-chipStory.addEventListener('input', () => { state.panels[selected].story = chipStory.value.toUpperCase(); redraw(); });
-zoomInput.addEventListener('input', () => { state.panels[selected].zoom = Number(zoomInput.value); redraw(); });
-panXInput.addEventListener('input', () => { state.panels[selected].panX = Number(panXInput.value); redraw(); });
-panYInput.addEventListener('input', () => { state.panels[selected].panY = Number(panYInput.value); redraw(); });
+titleInput.addEventListener('input', () => { cover.title = titleInput.value; draw(); });
+subtitleInput.addEventListener('input', () => { cover.subtitle = subtitleInput.value; draw(); });
+titleSizeInput.addEventListener('input', () => {
+  titleSizeOut.textContent = `${titleSizeInput.value}%`;
+  draw();
+});
+
+panelSelect.addEventListener('change', () => {
+  selected = Number(panelSelect.value);
+  syncPanelControls();
+});
+placeInput.addEventListener('input', () => { cover.panels[selected].place = placeInput.value; draw(); });
+timeInput.addEventListener('input', () => { cover.panels[selected].time = timeInput.value; draw(); });
+storyInput.addEventListener('input', () => { cover.panels[selected].story = storyInput.value; draw(); });
+zoomInput.addEventListener('input', () => {
+  cover.panels[selected].zoom = Number(zoomInput.value);
+  zoomOut.textContent = `${cover.panels[selected].zoom.toFixed(2)}×`;
+  draw();
+});
+panXInput.addEventListener('input', () => { cover.panels[selected].panX = Number(panXInput.value); draw(); });
+panYInput.addEventListener('input', () => { cover.panels[selected].panY = Number(panYInput.value); draw(); });
+
+canvas.addEventListener('click', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const fx = (e.clientX - rect.left) / rect.width;
+  const fy = (e.clientY - rect.top) / rect.height;
+  const rects = COVER_LAYOUTS[cover.layout].rects;
+  for (let i = 0; i < rects.length; i++) {
+    const [rx, ry, rw, rh] = rects[i];
+    if (fx >= rx && fx <= rx + rw && fy >= ry && fy <= ry + rh) {
+      selected = i;
+      syncPanelControls();
+      setStatus(`Panel ${i + 1} selected — ${cover.panels[i].place} ${cover.panels[i].time}.`);
+      return;
+    }
+  }
+});
 
 document.getElementById('export').addEventListener('click', () => {
-  const size = COVER_SIZES.find((s) => s.id === sizeSelect.value) ?? COVER_SIZES[0];
+  const slug = (cover.title.trim() || 'cover').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const name = `${slug}-${canvas.width}x${canvas.height}.png`;
   canvas.toBlob((blob) => {
     if (!blob) return;
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `sunset-heat-${size.w}x${size.h}.png`;
+    a.download = name;
     a.click();
-    setStatus(`Saved sunset-heat-${size.w}x${size.h}.png`);
+    setStatus(`Saved ${name}.`);
   }, 'image/png');
 });
 
-buildOptionRows();
-
-const query = new URLSearchParams(location.search);
-const shot = query.get('shot');
-if (shot) {
-  runShot(shot, query, async (presetId) => {
-    state = { photos: await loadSamples() };
-    applyPreset(presetId);
-    if (shot === 'cover') {
-      // A cover shot fills its window: the canvas takes the viewport's own
-      // size, so a portrait shot is a true portrait poster, not a square
-      // cover letterboxed in a tall window.
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      drawCover(canvas, state);
-    }
-    if (shot === 'editor') document.body.classList.add('shot-editor');
-    setStatus(`Preset ${presetId} — edit the caption, then export.`);
-  });
+const params = new URLSearchParams(location.search);
+shotMode = params.get('shot') ?? '';
+if (shotMode) {
+  await loadSamples();
+  await runShot(shotMode, params, api);
 } else {
-  loadSamples().then((photos) => {
-    state = { photos };
-    applyPreset('sunset-heat');
-    setStatus('Two sample photos loaded. Add your own photos to replace them.');
-  });
+  await loadSamples();
+  buildControls();
+  sizeCanvas();
+  draw();
+  setStatus('Ready — pick a preset or build your own cover.');
 }
