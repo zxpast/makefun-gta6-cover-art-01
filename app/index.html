@@ -3,69 +3,78 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sunset Heat Cover Studio</title>
+<title>Vice Coast Cover Studio — GTA-style cover art from your photos</title>
 <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+<header class="topbar">
+  <div class="brand">VICE COAST <span>COVER STUDIO</span></div>
+  <ol class="steps">
+    <li class="done">1 · Add photos</li>
+    <li class="done">2 · Caption</li>
+    <li>3 · Export PNG</li>
+  </ol>
+</header>
 <main class="app">
-  <section class="controls" aria-label="Cover editor">
-    <h1>Sunset Heat Cover Studio</h1>
-    <p class="tag">Turn your photos into a GTA-style poster cover — multi-panel, sunset-graded, chrome lettering.</p>
+  <section class="controls">
+    <h1>Make your cover</h1>
+    <p class="lede">Six original characters, three presets, one poster. Your photos stay on your device.</p>
 
-    <section class="step" aria-label="Step 1 photos">
-      <h2>1 · Photos</h2>
-      <label>Your photos (up to 4)
-        <input id="photos" type="file" accept="image/*" multiple>
-      </label>
-      <div class="row">
-        <button id="fill-all" type="button">Fill all panels</button>
-        <button id="spread" type="button">Spread photos</button>
-        <button id="surprise" type="button">Surprise me</button>
-      </div>
-      <p class="hint">Two sample photos are loaded already — the boulevard and the pier.</p>
-    </section>
+    <div class="presets">
+      <button id="preset-sunset" type="button">Sunset Heat</button>
+      <button id="preset-neon" type="button">Neon Nights</button>
+      <button id="preset-golden" type="button">Golden Coast</button>
+    </div>
 
-    <section class="step" aria-label="Step 2 layout and grade">
-      <h2>2 · Layout &amp; Grade</h2>
-      <div class="row wrap" id="layouts"></div>
-      <div class="row wrap" id="grades"></div>
-      <div class="row wrap" id="presets"></div>
-    </section>
+    <h2>Cast library</h2>
+    <div id="library" class="library"></div>
+    <p class="hint">Tap a face to put it in the selected panel. <button id="surprise" type="button">Surprise me</button></p>
+    <p id="cast-note" class="hint"></p>
 
-    <section class="step" aria-label="Step 3 caption">
-      <h2>3 · Caption</h2>
-      <label>Title <input id="title" type="text" maxlength="24" value="SUNSET HEAT"></label>
-      <label>Subtitle <input id="subtitle" type="text" maxlength="48" value="six nights in paradise"></label>
-      <label>Title size <span id="title-size-out">100%</span>
-        <input id="title-size" type="range" min="60" max="140" value="100">
-      </label>
-    </section>
+    <label>Your photos (up to 8)
+      <input id="add-photos" type="file" accept="image/*" multiple>
+    </label>
 
-    <section class="step" aria-label="Step 4 selected panel">
-      <h2>4 · Selected Panel</h2>
-      <label>Panel
-        <select id="panel-select"></select>
-      </label>
-      <label>Place <input id="panel-place" type="text" maxlength="24"></label>
-      <label>Time <input id="panel-time" type="text" maxlength="12"></label>
-      <label>Story <input id="panel-story" type="text" maxlength="32"></label>
-      <label>Zoom <span id="zoom-out">1.00×</span>
-        <input id="panel-zoom" type="range" min="1" max="2.5" step="0.05" value="1">
-      </label>
-      <label>Pan left–right <input id="panel-panx" type="range" min="-1" max="1" step="0.05" value="0"></label>
-      <label>Pan up–down <input id="panel-pany" type="range" min="-1" max="1" step="0.05" value="0"></label>
-    </section>
+    <label>Layout
+      <select id="layout"></select>
+    </label>
+    <label>Grade
+      <select id="grade"></select>
+    </label>
+    <label>Export size
+      <select id="size"></select>
+    </label>
 
-    <section class="step" aria-label="Export">
-      <h2>Export</h2>
-      <div class="row wrap" id="sizes"></div>
-      <button id="export" type="button" class="primary">Export PNG</button>
-      <p id="status" role="status">Ready.</p>
-    </section>
+    <label>Title
+      <input id="title" type="text" maxlength="24" value="SUNSET HEAT">
+    </label>
+    <label>Subtitle
+      <input id="subtitle" type="text" maxlength="40" value="one coast · no rules">
+    </label>
 
-    <p class="fine">Original art made on your device. No Rockstar logos, artwork or fonts — lettering is Anton &amp; Pacifico (SIL OFL).</p>
+    <h2>Look &amp; title</h2>
+    <div class="sliders">
+      <label>Paint <input id="look-paint" type="range" min="0" max="150" value="100"> <span id="look-paint-val">100%</span></label>
+      <label>Grade <input id="look-grade" type="range" min="0" max="150" value="100"> <span id="look-grade-val">100%</span></label>
+      <label>Halftone <input id="look-halftone" type="range" min="0" max="100" value="70"> <span id="look-halftone-val">70%</span></label>
+      <label>Grain <input id="look-grain" type="range" min="0" max="100" value="60"> <span id="look-grain-val">60%</span></label>
+      <label>Glow <input id="look-glow" type="range" min="0" max="100" value="70"> <span id="look-glow-val">70%</span></label>
+    </div>
+
+    <h2>Panels — tap a row to select it</h2>
+    <div id="panels" class="panels"></div>
+
+    <div class="export-row">
+      <button id="export" type="button">Export PNG</button>
+      <button id="export-all" type="button">Export all three</button>
+    </div>
+    <p class="sizes">Exports: 1080 × 1080 · 1080 × 1350 · 1920 × 1080</p>
+    <p id="status" role="status"></p>
+    <p class="fine">Original art made on your device. No Rockstar logos, artwork or fonts — lettering is Anton &amp; Pacifico (SIL OFL). Sample photos are original AI portraits made for this studio.</p>
   </section>
-  <canvas id="cover" width="1080" height="1080" aria-label="The cover preview"></canvas>
+  <section class="preview">
+    <canvas id="cover" width="1080" height="1080" aria-label="The cover"></canvas>
+  </section>
 </main>
 <script type="module" src="./src/main.js"></script>
 </body>

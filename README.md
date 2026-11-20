@@ -1,45 +1,52 @@
-# Sunset Heat Cover Studio
+# Vice Coast Cover Studio
 
-[![make.fun](https://make.fun/badge/gta6-cover-art-01.svg)](https://make.fun/bounty/gta6-cover-art-01)
-[![rank](https://make.fun/badge/gta6-cover-art-01/rank.svg)](https://make.fun/bounty/gta6-cover-art-01)
-[![reward](https://make.fun/badge/gta6-cover-art-01/reward.svg)](https://make.fun/bounty/gta6-cover-art-01)
+[![make.fun](https://img.shields.io/badge/make.fun-bounty-ff3d7e)](https://make.fun/bounty/gta6-cover-art-01)
+[![gta6-cover-art-01](https://img.shields.io/badge/competition-gta6--cover--art--01-7a2d8f)](https://make.fun/bounty/gta6-cover-art-01)
+[![prize $250](https://img.shields.io/badge/prize-%24250-ffc93a)](https://make.fun/bounty/gta6-cover-art-01)
 
-Turn your photos into GTA-style poster cover art: multi-panel collages with
-distinct photo crops, a sunset or neon grade over the photo pixels, chrome 3D
-lettering, per-panel caption chips, and poster furniture — seal, press quote,
-VOL tag, footer credits and barcode. Original art made on your device; no
-Rockstar logos, artwork or fonts.
+An offline browser app that turns your photos into GTA-style multi-panel
+poster cover art — a Vice City neon-sunset grade, chrome striped titles,
+caption chips and poster furniture — exported as a PNG in the common post
+sizes (1080 × 1080, 1080 × 1350, 1920 × 1080).
 
-## How it works — four steps
+## What it does
 
-1. **Photos** — load up to 4 of your own photos (two samples are included),
-   Fill all panels with one photo, Spread them across the panels, or roll
-   Surprise me.
-2. **Layout & Grade** — pick one of 4 layouts (six panels, hero + three,
-   four grid, tilted snaps) and one of 4 grades (Sunset, Neon nights,
-   Vice pink, Golden hour), or start from a preset cover.
-3. **Caption** — edit the chrome title, the script subtitle and the title size.
-4. **Selected Panel** — click a panel (or pick it from the list) and edit its
-   place, time and story, then zoom and pan the photo inside it.
+- **Six original characters** in the cast library: THE BOSS, THE INSIDER,
+  THE FIXER, THE COURIER, plus the kit's THE DRIVER and THE ANGLER. Every
+  cover uses at least five different faces and never repeats one inside a
+  cover.
+- **Three presets**: Sunset Heat (six-panel wide hero, pop-out hero
+  cut-out), Neon Nights (five night faces, magenta/cyan grade), Golden
+  Coast (tilted snaps).
+- **Grade on the photo pixels**: sunset / neon / golden-hour washes,
+  vignette, halftone and grain composited over every panel — never only
+  over a band. Caption times never contradict the photo: midnight panels
+  are genuinely dark.
+- **Chrome title overlapping the panels** in the middle of the cover
+  (yellow → orange → pink gradient, stripes, dark outline, drop shadow)
+  with a pink neon script subtitle. No flat title band — the only flat
+  strip is the ~7% footer with tagline, credits, barcode and studio logo.
+- **Editor**: 6 layouts, 6 grades, per-panel Face / Flip / Swap and smart
+  crops, Look & Title sliders (Paint, Grade, Halftone, Grain, Glow),
+  "Surprise me", up to 8 of your own photos, and Export all three sizes.
+- **Offline**: no network requests, photos stay on your device.
 
-Every change redraws the live preview at once. Export writes a PNG in the
-common post sizes — 1080 × 1080, 1080 × 1350 or 1920 × 1080.
-
-## Try it
+## Run it
 
 ```sh
-node serve.ts
+node serve.ts        # app on http://localhost:8080
 ```
 
-Then open http://localhost:8080.
-
-## Hand it in
+## Hand in
 
 ```sh
 mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 ```
 
-`main.ts` copies `app/` and `screenshots/` to the output directory and
-writes `dossier.json` with the vendored make.fun library.
+Built for the [make.fun bounty gta6-cover-art-01](https://make.fun/bounty/gta6-cover-art-01)
+($250 prize pool). Lettering is Anton & Pacifico (SIL Open Font License).
+All sample photos are original AI portraits made for this studio — no
+Rockstar Games logos, artwork or fonts anywhere.
 
-Entered on [make.fun](https://make.fun/?ref=6hmpy1rq&utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01).
+---
+Referral: `6hmpy1rq`

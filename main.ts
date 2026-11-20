@@ -1,11 +1,12 @@
-// Sunset Heat Cover Studio — hand-in program (Node 22, standard library
-// only). Copies app/ and screenshots/ from beside this file to /output and
-// writes /output/dossier.json with the vendored make.fun library.
-//
-// Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
+// Vice Coast Cover Studio — gta6-cover-art-01 entry (Node 22, stdlib only).
+// The program hands in the offline browser app in app/ (plain static
+// files: index.html + ES modules, no network request, fonts vendored) and
+// the four screenshots in screenshots/, then writes /output/dossier.json
+// with the vendored make.fun library. Run it with:
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+// Serve the app locally with `node serve.ts` (http://localhost:8080).
 
-import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-app.ts';
@@ -13,32 +14,24 @@ import { buildDossier } from './vendor/makefun-app.ts';
 const here = fileURLToPath(new URL('.', import.meta.url));
 const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 
-// Never remove /output itself: as uid 65534 that fails with EPERM. Empty it
-// entry by entry instead, then recreate the directories we need.
 mkdirSync(out, { recursive: true });
-for (const entry of readdirSync(out)) {
-  rmSync(join(out, entry), { recursive: true, force: true });
-}
-mkdirSync(join(out, 'app'), { recursive: true });
-mkdirSync(join(out, 'screenshots'), { recursive: true });
 cpSync(join(here, 'app'), join(out, 'app'), { recursive: true });
+mkdirSync(join(out, 'screenshots'), { recursive: true });
 if (existsSync(join(here, 'screenshots'))) {
   cpSync(join(here, 'screenshots'), join(out, 'screenshots'), { recursive: true });
 }
 
-// The scorer's own caps (reference/gate.json): only text_max_bytes shapes the
-// bytes; the others refuse an entry the scorer would refuse (more than 4
-// screenshots or one over 256 KiB; more than 993 files in app/ or 48 MiB of
-// app files, in all, or a path under app/ over 1000 bytes).
-const dossier = buildDossier(out, {
-  text_max_bytes: 163840,
-  screenshots: { max: 4, max_bytes: 262144 },
-  app_max_files: 993,
-  app_max_bytes: 50331648,
-  app_path_max_bytes: 1000,
-});
-writeFileSync(join(out, 'dossier.json'), dossier);
-
-const shots = readdirSync(join(out, 'screenshots')).filter((f) => !f.startsWith('.'));
-console.log(`dossier.json: ${statSync(join(out, 'dossier.json')).size} bytes`);
-console.log(`screenshots: ${shots.length} (${shots.join(', ')})`);
+// The scorer's own caps (reference/gate.json): text_max_bytes shapes the
+// dossier bytes; the rest refuse an entry the scorer would refuse — more
+// than 4 screenshots or one over 256 KiB; more than 993 files in app/ or
+// 48 MiB of app files in all, or a path under app/ over 1000 bytes.
+writeFileSync(
+  join(out, 'dossier.json'),
+  buildDossier(out, {
+    text_max_bytes: 163840,
+    screenshots: { max: 4, max_bytes: 262144 },
+    app_max_files: 993,
+    app_max_bytes: 50331648,
+    app_path_max_bytes: 1000,
+  }),
+);

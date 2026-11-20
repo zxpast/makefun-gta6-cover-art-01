@@ -1,40 +1,50 @@
-@font-face {
-  font-family: 'Anton';
-  src: url('./fonts/Anton-Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Pacifico';
-  src: url('./fonts/Pacifico-Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-* { box-sizing: border-box; }
-html, body { margin: 0; min-height: 100%; background: #160a24; color: #f4eefb; font: 15px/1.45 system-ui, sans-serif; }
-.app { display: flex; gap: 28px; align-items: flex-start; justify-content: center; padding: 24px; }
-.controls { width: 320px; flex: 0 0 320px; display: flex; flex-direction: column; gap: 16px; }
-.controls h1 { margin: 0; font-family: Anton, sans-serif; font-size: 30px; letter-spacing: 0.5px; color: #ffd94d; }
-.tag { margin: 0; color: #cdbce0; }
-.step { background: #221239; border: 1px solid #3a2358; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
-.step h2 { margin: 0; font-family: Anton, sans-serif; font-size: 16px; color: #ff9a3d; }
-label { display: flex; flex-direction: column; gap: 5px; font-weight: 600; font-size: 13px; color: #e8ddf5; }
-input[type=text], select { font: inherit; padding: 8px; border: 1px solid #5b3d86; border-radius: 6px; background: #160a24; color: #f4eefb; }
-input[type=file] { font: inherit; }
-input[type=range] { width: 100%; accent-color: #ff9a3d; }
-.row { display: flex; gap: 8px; }
-.row.wrap { flex-wrap: wrap; }
-button { font: inherit; font-weight: 700; padding: 8px 10px; border: 1px solid #5b3d86; border-radius: 6px; background: #2c1848; color: #f4eefb; cursor: pointer; }
-button:hover { background: #3a2358; }
-button.active { background: #ff9a3d; border-color: #ff9a3d; color: #241031; }
-button.primary { background: #ff9a3d; border-color: #ff9a3d; color: #241031; font-size: 16px; padding: 12px; }
-.hint { margin: 0; font-size: 12px; color: #a78fc4; }
-#status { margin: 0; font-size: 13px; color: #ffd94d; }
-.fine { margin: 0; font-size: 12px; color: #a78fc4; }
-#cover { width: min(68vh, 58vw); height: auto; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); background: #2b0f3d; }
-body.shot-cover { background: #2b0f3d; }
-body.shot-cover .controls { display: none; }
-body.shot-cover .app { padding: 0; gap: 0; }
-body.shot-cover #cover { box-shadow: none; }
+@font-face { font-family: 'Anton'; src: url('./fonts/Anton-Regular.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Pacifico'; src: url('./fonts/Pacifico-Regular.ttf') format('truetype'); font-display: swap; }
+
+html, body { margin: 0; min-height: 100%; background: #12081f; color: #f5eefc; font: 15px/1.45 system-ui, sans-serif; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 20px; background: linear-gradient(90deg, #ff9a2a, #ff3d7e 55%, #7a2d8f); }
+.brand { font-family: Anton, sans-serif; font-size: 22px; letter-spacing: 1px; color: #fff; }
+.brand span { color: #ffe95a; }
+.steps { display: flex; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.steps li { background: rgba(0,0,0,0.35); color: #fff; border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700; }
+.steps li.done { background: rgba(0,0,0,0.65); }
+.app { display: flex; gap: 24px; align-items: flex-start; justify-content: center; padding: 20px; box-sizing: border-box; }
+.controls { display: flex; flex-direction: column; gap: 12px; width: 340px; flex: none; }
+.controls h1 { margin: 0; font-family: Anton, sans-serif; font-size: 30px; letter-spacing: 1px; }
+.controls h2 { margin: 6px 0 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: #ffb3d1; }
+.lede { margin: 0; color: #cdbfe0; }
+label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 13px; }
+input[type=text], select { font: inherit; padding: 8px; border: 1px solid #5b4a73; border-radius: 6px; background: #241638; color: #fff; }
+input[type=range] { accent-color: #ff3d7e; }
+button { font: inherit; font-weight: 700; padding: 10px 12px; border: 0; border-radius: 6px; background: #ff3d7e; color: #fff; cursor: pointer; }
+button:hover { background: #ff5c92; }
+.presets { display: flex; gap: 8px; }
+.presets button { flex: 1; background: #2a1845; border: 1px solid #7a2d8f; }
+.presets button:hover { background: #3d2358; }
+.library { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.thumb { padding: 0; background: #241638; border: 1px solid #5b4a73; overflow: hidden; text-align: left; }
+.thumb img { display: block; width: 100%; height: 74px; object-fit: cover; object-position: top; }
+.thumb span { display: block; padding: 4px 6px; font-size: 11px; font-weight: 700; color: #ffe95a; }
+.hint { margin: 0; font-size: 12px; color: #cdbfe0; }
+.hint button { padding: 4px 10px; font-size: 12px; }
+.sliders label { flex-direction: row; align-items: center; gap: 8px; }
+.sliders input { flex: 1; }
+.sliders span { width: 42px; text-align: right; font-weight: 400; color: #cdbfe0; }
+.panels { display: flex; flex-direction: column; gap: 6px; }
+.panel-row { display: flex; align-items: center; gap: 6px; background: #241638; border: 1px solid #5b4a73; border-radius: 6px; padding: 6px 8px; font-size: 12px; cursor: pointer; }
+.panel-row.selected { border-color: #ff3d7e; }
+.panel-role { font-weight: 800; color: #ffe95a; white-space: nowrap; }
+.panel-cap { flex: 1; color: #cdbfe0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.panel-row button, .panel-row select { padding: 3px 6px; font-size: 11px; background: #2a1845; color: #fff; border: 1px solid #5b4a73; }
+.export-row { display: flex; gap: 8px; }
+.export-row button { flex: 1; }
+#export-all { background: #7a2d8f; }
+.sizes, .fine { margin: 0; font-size: 12px; color: #9d8bb8; }
+#status { margin: 0; font-size: 13px; color: #7dffb0; }
+.preview { position: sticky; top: 16px; }
+#cover { width: min(72vh, 62vw); height: auto; aspect-ratio: 1; box-shadow: 0 12px 44px rgba(0,0,0,0.55); background: #1c0b2e; }
+body.shot-cover .topbar, body.shot-cover .controls { display: none; }
+body.shot-cover .app { padding: 0; }
+body.shot-cover .preview { position: static; }
+body.shot-cover #cover { width: 100vw; height: 100vh; object-fit: fill; box-shadow: none; }
+body.shot-editor .preview { position: static; }
