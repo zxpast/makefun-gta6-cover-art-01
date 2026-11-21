@@ -4,49 +4,67 @@
 [![rank](https://make.fun/badge/gta6-cover-art-01/zxpast/makefun-gta6-cover-art-01/rank.svg)](https://make.fun/bounty/gta6-cover-art-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
 [![reward](https://make.fun/badge/gta6-cover-art-01/zxpast/makefun-gta6-cover-art-01/reward.svg)](https://make.fun/bounty/gta6-cover-art-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
 
-An offline browser app that turns your photos into GTA-style multi-panel
-poster cover art — a Vice City neon-sunset grade, chrome striped titles,
-caption chips and poster furniture — exported as a PNG in the common post
-sizes (1080 × 1080, 1080 × 1350, 1920 × 1080).
+An offline browser app that turns photos into GTA-style cover art: a mosaic
+of cinematic panels, a chrome title that cuts across the panels, a script
+subtitle, and a thin credits footer. No flat title band, ever.
 
-## What it does
+## The cast
 
-- **Six original characters** in the cast library: THE BOSS, THE INSIDER,
-  THE FIXER, THE COURIER, plus the kit's THE DRIVER and THE ANGLER. Every
-  cover uses at least five different faces and never repeats one inside a
-  cover.
-- **Three presets**: Sunset Heat (six-panel wide hero, pop-out hero
-  cut-out), Neon Nights (five night faces, magenta/cyan grade), Golden
-  Coast (tilted snaps).
-- **Grade on the photo pixels**: sunset / neon / golden-hour washes,
-  vignette, halftone and grain composited over every panel — never only
-  over a band. Caption times never contradict the photo: midnight panels
-  are genuinely dark.
-- **Chrome title overlapping the panels** in the middle of the cover
-  (yellow → orange → pink gradient, stripes, dark outline, drop shadow)
-  with a pink neon script subtitle. No flat title band — the only flat
-  strip is the ~7% footer with tagline, credits, barcode and studio logo.
-- **Editor**: 6 layouts, 6 grades, per-panel Face / Flip / Swap and smart
-  crops, Look & Title sliders (Paint, Grade, Halftone, Grain, Glow),
-  "Surprise me", up to 8 of your own photos, and Export all three sizes.
-- **Offline**: no network requests, photos stay on your device.
+Six faces, roles fixed on every cover (two kit photos, four original
+portraits made for this entry):
+
+| Face | Role | Light |
+| --- | --- | --- |
+| boulevard | THE BOSS | sunset |
+| vice | THE CREW | sunset |
+| fixer | THE FIXER | sunset marina |
+| pier | THE CREW | day |
+| insider | THE INSIDER | midnight neon |
+| courier | THE COURIER | midnight neon |
+
+Every cover uses five different faces — zero duplicates, enforced by
+`validateCast` in `app/src/cover.js`.
+
+## Presets
+
+| Preset | Layout | Grade | Caption time |
+| --- | --- | --- | --- |
+| Sunset Heat | Hero mosaic | Sunset Heat | sunset |
+| Neon Nights | Hero mosaic | Neon Nights | midnight |
+| Golden Coast | Tilted snaps | Golden Coast | sunset |
+
+The neon grade (magenta/cyan overlay + night darkening + vignette + glow)
+is painted on top of the photo pixels, so graded panels really read as
+night; `checkTimeCoherence` measures the graded panel luminance against
+the caption time and fails a "midnight" panel with daylight luminance.
+
+## Editor
+
+Three steps in the header: **1 Add photos / 2 Caption / 3 Export PNG**.
+The library shows all six cast photos plus **Surprise me**; your own
+photos (up to 8) join the cast. Six layouts (Hero mosaic, Tilted snaps,
+Diagonal trio, Seven mosaic, Grid six, Strip five), six grades (Sunset
+Heat, Neon Nights, Golden Coast, Tropic teal, Heatwave, Vice Violet),
+per-panel Face / Flip / Swap with a face smart-crop, and Paint / Grade /
+Halftone / Grain / Glow sliders that all change the render. The hero
+figure pops out 10% larger than its panel frame with a white outline glow.
+
+Export: Wide 1280×720, Portrait 1024×1280, Square 1080×1080 — or
+**Export all three**. The 1280 long-side clamp lives in the code
+(`clampExportSize` in `app/src/cover.js`), not just in the screenshots.
 
 ## Run it
 
 ```sh
-node serve.ts        # app on http://localhost:8080
+node serve.ts        # app/ on http://localhost:8080
 ```
 
-## Hand in
+Build the entry (validates screenshots, README badges and fonts first):
 
 ```sh
 mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 ```
 
-Built for the [make.fun bounty gta6-cover-art-01](https://make.fun/bounty/gta6-cover-art-01)
-($250 prize pool). Lettering is Anton & Pacifico (SIL Open Font License).
-All sample photos are original AI portraits made for this studio — no
-Rockstar Games logos, artwork or fonts anywhere.
-
----
-Referral: `6hmpy1rq`
+Screenshots live in `screenshots/` (see `shots.json` for the four scenes).
+Fonts are Anton and Pacifico under the SIL Open Font License
+(`app/fonts/OFL-Anton.txt`, `app/fonts/OFL-Pacifico.txt`).

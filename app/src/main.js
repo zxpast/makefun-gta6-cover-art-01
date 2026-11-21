@@ -1,245 +1,229 @@
 // Vice Coast Cover Studio — editor wiring.
-// Steps: 1 Add photos / 2 Caption / 3 Export PNG. The live preview is
-// the same drawCover the screenshots use, so what you see is the export.
-import { drawCover, drawCoverTracked, COVER_SIZES, COVER_LAYOUTS, COVER_GRADES, SAMPLE_PHOTOS, PRESETS, validateCast } from './cover.js';
+//
+// Steps in the header: 1 Add photos / 2 Caption / 3 Export PNG. The library
+// shows all six cast photos; "Surprise me" picks a random preset; your own
+// photos (up to 8) join the cast as extra faces. Every control re-renders
+// the same drawCover canvas the screenshots use, so the editor and the
+// exported covers can never drift apart.
+
+import { CAST, GRADES, LAYOUTS, PRESETS, drawCover, clampExportSize, EXPORT_SIZES } from './cover.js';
 import { runShot } from './shots.js';
 
 const canvas = document.getElementById('cover');
-const titleInput = document.getElementById('title');
-const subtitleInput = document.getElementById('subtitle');
 const status = document.getElementById('status');
-const libraryEl = document.getElementById('library');
-const layoutEl = document.getElementById('layout');
-const gradeEl = document.getElementById('grade');
-const panelListEl = document.getElementById('panels');
-const sizeEl = document.getElementById('size');
+const library = document.getElementById('library');
+const captionInput = document.getElementById('caption');
+const subtitleInput = document.getElementById('subtitle');
+const taglineInput = document.getElementById('tagline');
+const layoutSelect = document.getElementById('layout');
+const gradeSelect = document.getElementById('grade');
+const panelSelect = document.getElementById('panel');
+const cropSelect = document.getElementById('crop');
 
-export function loadImage(url, photoId) {
+const images = {};       // cast id -> HTMLImageElement
+const userPhotos = [];   // { id, img, name } — up to 8
+let state = {
+  preset: 'sunset-heat',
+  photos: [...PRESETS['sunset-heat'].photos],
+  layout: 'hero-mosaic',
+  grade: 'sunset-heat',
+  title: 'VICE COAST',
+  subtitle: PRESETS['sunset-heat'].subtitle,
+  tagline: PRESETS['sunset-heat'].tagline,
+  look: { paint: 0.5, grade: 0.7, halftone: 0.25, grain: 0.3, glow: 0.6 },
+  faceCrop: true,
+  selectedPanel: 0,
+  flipped: {},
+};
+
+export function loadImage(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.onload = () => { img.dataset.photoId = photoId; resolve(img); };
+    img.onload = () => resolve(img);
     img.onerror = reject;
     img.src = url;
   });
 }
 
-const state = {
-  preset: 'sunset-heat',
-  layout: 'six-panels',
-  grade: 'sunset',
-  title: 'SUNSET HEAT',
-  subtitle: 'one coast · no rules',
-  look: { paint: 1, grade: 1, halftone: 0.7, grain: 0.6, glow: 0.7 },
-  photos: {},       // photoId -> Image
-  userPhotos: [],   // {id, name, img}
-  panels: null,     // working copy of the preset panels
-  selected: 0,
-};
-
-function presetPanels() {
-  return PRESETS[state.preset].panels.map((p) => ({ ...p }));
+async function loadFonts() {
+  try {
+    await Promise.all([
+      document.fonts.load('100px Anton'),
+      document.fonts.load('40px Pacifico'),
+      document.fonts.ready,
+    ]);
+  } catch { /* fall back to system fonts; the render still works */ }
 }
 
-function currentPanels() {
-  return state.panels || presetPanels();
+function currentChecks() {
+  return drawCover(canvas, images, {
+    layout: state.layout, grade: state.grade, photos: state.photos,
+    title: state.title, subtitle: state.subtitle, tagline: state.tagline,
+    look: state.look, faceCrop: state.faceCrop, flipped: state.flipped,
+  });
 }
 
 function redraw() {
-  const size = COVER_SIZES.find((s) => s.id === sizeEl.value) || COVER_SIZES[0];
-  canvas.width = size.w;
-  canvas.height = size.h;
-  drawCoverTracked(canvas, state.photos, state.preset, {
-    layout: state.layout, grade: state.grade,
-    title: state.title, subtitle: state.subtitle,
-    panels: currentPanels(), look: state.look,
-  });
-  renderPanelList();
-}
-
-function renderPanelList() {
-  const panels = currentPanels();
-  panelListEl.innerHTML = '';
-  panels.forEach((p, i) => {
-    const meta = SAMPLE_PHOTOS.find((s) => s.id === p.photo);
-    const row = document.createElement('div');
-    row.className = 'panel-row' + (i === state.selected ? ' selected' : '');
-    row.innerHTML = `
-      <span class="panel-role">${meta ? meta.role : p.photo}</span>
-      <span class="panel-cap">${p.caption} · ${p.hour}:00</span>
-      <button type="button" data-act="face" title="Crop to face">Face</button>
-      <button type="button" data-act="flip" title="Flip panel">Flip</button>
-      <button type="button" data-act="swap" title="Swap with next panel">Swap</button>
-      <select data-act="crop" title="Smart crop">
-        <option value="face"${p.mode === 'face' ? ' selected' : ''}>Face crop</option>
-        <option value="wide"${p.mode === 'wide' ? ' selected' : ''}>Wide crop</option>
-        <option value="detail"${p.mode === 'detail' ? ' selected' : ''}>Detail crop</option>
-      </select>`;
-    row.addEventListener('click', (e) => {
-      state.selected = i;
-      const act = e.target.dataset?.act;
-      if (!act) { redraw(); return; }
-      if (act === 'face') { state.panels = currentPanels(); state.panels[i].mode = 'face'; }
-      if (act === 'flip') { state.panels = currentPanels(); state.panels[i].flip = !state.panels[i].flip; }
-      if (act === 'swap') {
-        state.panels = currentPanels();
-        const j = (i + 1) % state.panels.length;
-        [state.panels[i], state.panels[j]] = [state.panels[j], state.panels[i]];
-      }
-      redraw();
-    });
-    row.querySelector('select').addEventListener('change', (e) => {
-      state.panels = currentPanels();
-      state.panels[i].mode = e.target.value;
-      redraw();
-    });
-    panelListEl.appendChild(row);
-  });
-  const cast = validateCast(state.preset);
-  const castEl = document.getElementById('cast-note');
-  if (castEl) castEl.textContent = `Cast: ${cast.unique} different faces · ${cast.duplicates.length ? 'DUPLICATE FACES — fix before export' : 'no repeats'}`;
+  try {
+    const checks = currentChecks();
+    status.textContent = checks.timeOk && checks.titleOverlaps && checks.flatFraction < 0.12
+      ? `Ready — ${checks.uniqueFaces} faces, flat ${(checks.flatFraction * 100).toFixed(1)}%, title overlaps panels.`
+      : `Check: faces ${checks.uniqueFaces}, flat ${(checks.flatFraction * 100).toFixed(1)}%, title overlap ${checks.titleOverlaps}, time OK ${checks.timeOk}.`;
+  } catch (err) {
+    status.textContent = err.message;
+  }
 }
 
 function buildLibrary() {
-  libraryEl.innerHTML = '';
-  SAMPLE_PHOTOS.forEach((s) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'thumb';
-    b.innerHTML = `<img src="./samples/${s.file}" alt="${s.role}"><span>${s.role}</span>`;
-    b.addEventListener('click', () => {
-      // Tapping a library photo swaps it into the selected panel.
-      state.panels = currentPanels();
-      state.panels[state.selected].photo = s.id;
+  library.innerHTML = '';
+  for (const member of CAST) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'thumb';
+    btn.dataset.id = member.id;
+    btn.innerHTML = `<img src="samples/${member.file}" alt="${member.role}"><span>${member.role}</span>`;
+    btn.addEventListener('click', () => {
+      const i = state.photos.indexOf(member.id);
+      if (i >= 0 && state.photos.length > 5) state.photos.splice(i, 1);
+      else if (i < 0) state.photos[state.selectedPanel % state.photos.length] = member.id;
+      syncPanelSelect();
       redraw();
     });
-    libraryEl.appendChild(b);
-  });
-  state.userPhotos.forEach((u) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'thumb';
-    b.innerHTML = `<img src="${u.url}" alt="${u.name}"><span>${u.name}</span>`;
-    libraryEl.appendChild(b);
-  });
+    library.appendChild(btn);
+  }
 }
 
-function buildSelects() {
-  COVER_LAYOUTS.forEach((l) => {
-    const o = document.createElement('option');
-    o.value = l.id; o.textContent = l.label;
-    layoutEl.appendChild(o);
+function syncPanelSelect() {
+  panelSelect.innerHTML = '';
+  state.photos.forEach((id, i) => {
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = `Panel ${i + 1} — ${(CAST.find((c) => c.id === id) || { role: id }).role}`;
+    panelSelect.appendChild(opt);
   });
-  COVER_GRADES.forEach((g) => {
-    const o = document.createElement('option');
-    o.value = g.id; o.textContent = g.label;
-    gradeEl.appendChild(o);
-  });
-  COVER_SIZES.forEach((s) => {
-    const o = document.createElement('option');
-    o.value = s.id; o.textContent = s.label;
-    sizeEl.appendChild(o);
-  });
-  layoutEl.value = state.layout;
-  gradeEl.value = state.grade;
+  panelSelect.value = String(state.selectedPanel);
 }
 
 function applyPreset(id) {
-  state.preset = id;
   const p = PRESETS[id];
-  state.layout = p.layout;
-  state.grade = p.grade;
-  state.title = p.title;
-  state.subtitle = p.subtitle;
-  state.panels = null;
-  state.selected = 0;
-  titleInput.value = p.title;
+  state = { ...state, preset: id, photos: [...p.photos], layout: p.layout, grade: p.grade,
+    title: p.title, subtitle: p.subtitle, tagline: p.tagline, selectedPanel: 0 };
+  captionInput.value = p.title;
   subtitleInput.value = p.subtitle;
-  layoutEl.value = p.layout;
-  gradeEl.value = p.grade;
+  taglineInput.value = p.tagline;
+  layoutSelect.value = p.layout;
+  gradeSelect.value = p.grade;
+  syncPanelSelect();
   redraw();
 }
 
-function exportPNG(w, h, name) {
+function fillSelects() {
+  for (const [id, def] of Object.entries(LAYOUTS)) {
+    const opt = document.createElement('option');
+    opt.value = id; opt.textContent = def.label;
+    layoutSelect.appendChild(opt);
+  }
+  for (const [id, def] of Object.entries(GRADES)) {
+    const opt = document.createElement('option');
+    opt.value = id; opt.textContent = def.label;
+    gradeSelect.appendChild(opt);
+  }
+  const presets = document.getElementById('presets');
+  for (const [id, p] of Object.entries(PRESETS)) {
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.textContent = p.label;
+    btn.addEventListener('click', () => applyPreset(id));
+    presets.appendChild(btn);
+  }
+}
+
+function bindSlider(id, key) {
+  const el = document.getElementById(id);
+  el.addEventListener('input', () => { state.look[key] = el.value / 100; redraw(); });
+}
+
+function exportOne(size) {
+  const { w, h } = clampExportSize(size.w, size.h);
   const off = document.createElement('canvas');
   off.width = w; off.height = h;
-  drawCover(off, state.photos, state.preset, {
-    layout: state.layout, grade: state.grade,
-    title: state.title, subtitle: state.subtitle,
-    panels: currentPanels(), look: state.look,
+  drawCover(off, images, {
+    layout: state.layout, grade: state.grade, photos: state.photos,
+    title: state.title, subtitle: state.subtitle, tagline: state.tagline,
+    look: state.look, faceCrop: state.faceCrop, flipped: state.flipped,
   });
   off.toBlob((blob) => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = name;
+    a.download = `vice-coast-${w}x${h}.png`;
     a.click();
-    status.textContent = `Saved ${name}`;
+    status.textContent = `Saved vice-coast-${w}x${h}.png`;
   }, 'image/png');
 }
 
-async function init() {
-  buildSelects();
+document.getElementById('surprise').addEventListener('click', () => {
+  const ids = Object.keys(PRESETS);
+  applyPreset(ids[Math.floor(Math.random() * ids.length)]);
+});
+document.getElementById('addPhotos').addEventListener('change', async (e) => {
+  for (const file of [...e.target.files].slice(0, 8 - userPhotos.length)) {
+    const img = await loadImage(URL.createObjectURL(file));
+    const id = `user-${userPhotos.length}`;
+    images[id] = img;
+    userPhotos.push({ id, name: file.name });
+    if (state.photos.length < 6) state.photos.push(id);
+  }
+  status.textContent = `${userPhotos.length} of 8 of your photos added.`;
+  syncPanelSelect();
+  redraw();
+});
+captionInput.addEventListener('input', () => { state.title = captionInput.value.toUpperCase(); redraw(); });
+subtitleInput.addEventListener('input', () => { state.subtitle = subtitleInput.value; redraw(); });
+taglineInput.addEventListener('input', () => { state.tagline = taglineInput.value; redraw(); });
+layoutSelect.addEventListener('change', () => { state.layout = layoutSelect.value; redraw(); });
+gradeSelect.addEventListener('change', () => { state.grade = gradeSelect.value; redraw(); });
+panelSelect.addEventListener('change', () => { state.selectedPanel = Number(panelSelect.value); });
+cropSelect.addEventListener('change', () => {
+  state.faceCrop = cropSelect.value !== 'full';
+  redraw();
+});
+document.getElementById('faceBtn').addEventListener('click', () => { state.faceCrop = true; cropSelect.value = 'face'; redraw(); });
+document.getElementById('flipBtn').addEventListener('click', () => {
+  const id = state.photos[state.selectedPanel];
+  state.flipped[id] = !state.flipped[id];
+  redraw();
+});
+document.getElementById('swapBtn').addEventListener('click', () => {
+  const i = state.selectedPanel;
+  const j = (i + 1) % state.photos.length;
+  [state.photos[i], state.photos[j]] = [state.photos[j], state.photos[i]];
+  state.selectedPanel = j;
+  syncPanelSelect();
+  redraw();
+});
+document.getElementById('exportAll').addEventListener('click', async () => {
+  for (const size of EXPORT_SIZES) exportOne(size);
+});
+for (const size of EXPORT_SIZES) {
+  document.getElementById(`export-${size.id}`).addEventListener('click', () => exportOne(size));
+}
+bindSlider('paint', 'paint');
+bindSlider('gradeSlider', 'grade');
+bindSlider('halftone', 'halftone');
+bindSlider('grain', 'grain');
+bindSlider('glow', 'glow');
+
+const shot = new URLSearchParams(location.search).get('shot');
+async function boot() {
+  fillSelects();
   buildLibrary();
-  // Load the six sample photos (two kit photos + four new faces).
-  await Promise.all(SAMPLE_PHOTOS.map(async (s) => {
-    state.photos[s.id] = await loadImage(`./samples/${s.file}`, s.id);
-  }));
-  buildLibrary();
-
-  document.getElementById('preset-sunset').addEventListener('click', () => applyPreset('sunset-heat'));
-  document.getElementById('preset-neon').addEventListener('click', () => applyPreset('neon-nights'));
-  document.getElementById('preset-golden').addEventListener('click', () => applyPreset('golden-coast'));
-  layoutEl.addEventListener('change', () => { state.layout = layoutEl.value; redraw(); });
-  gradeEl.addEventListener('change', () => { state.grade = gradeEl.value; redraw(); });
-  sizeEl.addEventListener('change', redraw);
-  titleInput.addEventListener('input', () => { state.title = titleInput.value; redraw(); });
-  subtitleInput.addEventListener('input', () => { state.subtitle = subtitleInput.value; redraw(); });
-
-  // LOOK & TITLE sliders — every one changes the render for real.
-  ['paint', 'grade', 'halftone', 'grain', 'glow'].forEach((key) => {
-    const el = document.getElementById(`look-${key}`);
-    if (!el) return;
-    el.addEventListener('input', () => {
-      state.look[key] = Number(el.value) / 100;
-      document.getElementById(`look-${key}-val`).textContent = `${el.value}%`;
-      redraw();
-    });
-  });
-
-  document.getElementById('surprise').addEventListener('click', () => {
-    const ids = Object.keys(PRESETS);
-    applyPreset(ids[Math.floor(Math.random() * ids.length)]);
-    status.textContent = 'Surprise me: shuffled to a new preset';
-  });
-
-  document.getElementById('add-photos').addEventListener('change', async (e) => {
-    const files = [...e.target.files].slice(0, 8);
-    for (const f of files) {
-      const url = URL.createObjectURL(f);
-      const img = await loadImage(url, `user-${state.userPhotos.length}`);
-      state.userPhotos.push({ id: img.dataset.photoId, name: f.name.slice(0, 14), url, img });
-      state.photos[img.dataset.photoId] = img;
-    }
-    buildLibrary();
-    status.textContent = `${state.userPhotos.length} of your photos loaded (up to 8)`;
-  });
-
-  document.getElementById('export').addEventListener('click', () => {
-    const size = COVER_SIZES.find((s) => s.id === sizeEl.value) || COVER_SIZES[0];
-    exportPNG(size.w, size.h, `cover-${size.w}x${size.h}.png`);
-  });
-  document.getElementById('export-all').addEventListener('click', () => {
-    exportPNG(1080, 1080, 'cover-1080x1080.png');
-    exportPNG(1080, 1350, 'cover-1080x1350.png');
-    exportPNG(1920, 1080, 'cover-1920x1080.png');
-    status.textContent = 'Exported all three sizes';
-  });
-
-  const shot = new URLSearchParams(location.search).get('shot');
+  syncPanelSelect();
+  await loadFonts();
+  for (const member of CAST) images[member.id] = await loadImage(`samples/${member.file}`);
+  const params = new URLSearchParams(location.search);
   if (shot) {
-    await runShot(shot, new URLSearchParams(location.search), state, redraw);
+    await runShot(shot, params, { images, applyPreset, redraw, canvas, status });
   } else {
     redraw();
   }
 }
-
-init();
+boot();

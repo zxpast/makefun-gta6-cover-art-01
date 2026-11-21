@@ -3,77 +3,90 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vice Coast Cover Studio — GTA-style cover art from your photos</title>
+<title>Vice Coast Cover Studio</title>
 <link rel="stylesheet" href="./style.css">
 </head>
 <body>
 <header class="topbar">
-  <div class="brand">VICE COAST <span>COVER STUDIO</span></div>
-  <ol class="steps">
-    <li class="done">1 · Add photos</li>
-    <li class="done">2 · Caption</li>
-    <li>3 · Export PNG</li>
+  <div class="brand">VICE COAST <span>Cover Studio</span></div>
+  <ol class="steps" aria-label="Steps">
+    <li class="done">1 Add photos</li>
+    <li class="done">2 Caption</li>
+    <li>3 Export PNG</li>
   </ol>
 </header>
 <main class="app">
-  <section class="controls">
-    <h1>Make your cover</h1>
-    <p class="lede">Six original characters, three presets, one poster. Your photos stay on your device.</p>
+  <section class="controls" aria-label="Editor">
+    <h1>Make your Vice Coast cover</h1>
+    <p class="lede">Six faces, three presets, one chrome title. Everything runs offline.</p>
 
-    <div class="presets">
-      <button id="preset-sunset" type="button">Sunset Heat</button>
-      <button id="preset-neon" type="button">Neon Nights</button>
-      <button id="preset-golden" type="button">Golden Coast</button>
+    <div class="group">
+      <h2>1 · Cast library</h2>
+      <div id="library" class="library"></div>
+      <button id="surprise" type="button">Surprise me</button>
     </div>
 
-    <h2>Cast library</h2>
-    <div id="library" class="library"></div>
-    <p class="hint">Tap a face to put it in the selected panel. <button id="surprise" type="button">Surprise me</button></p>
-    <p id="cast-note" class="hint"></p>
-
-    <label>Your photos (up to 8)
-      <input id="add-photos" type="file" accept="image/*" multiple>
-    </label>
-
-    <label>Layout
-      <select id="layout"></select>
-    </label>
-    <label>Grade
-      <select id="grade"></select>
-    </label>
-    <label>Export size
-      <select id="size"></select>
-    </label>
-
-    <label>Title
-      <input id="title" type="text" maxlength="24" value="SUNSET HEAT">
-    </label>
-    <label>Subtitle
-      <input id="subtitle" type="text" maxlength="40" value="one coast · no rules">
-    </label>
-
-    <h2>Look &amp; title</h2>
-    <div class="sliders">
-      <label>Paint <input id="look-paint" type="range" min="0" max="150" value="100"> <span id="look-paint-val">100%</span></label>
-      <label>Grade <input id="look-grade" type="range" min="0" max="150" value="100"> <span id="look-grade-val">100%</span></label>
-      <label>Halftone <input id="look-halftone" type="range" min="0" max="100" value="70"> <span id="look-halftone-val">70%</span></label>
-      <label>Grain <input id="look-grain" type="range" min="0" max="100" value="60"> <span id="look-grain-val">60%</span></label>
-      <label>Glow <input id="look-glow" type="range" min="0" max="100" value="70"> <span id="look-glow-val">70%</span></label>
+    <div class="group">
+      <h2>Your photos (up to 8)</h2>
+      <label class="file">Add photos <input id="addPhotos" type="file" accept="image/*" multiple></label>
     </div>
 
-    <h2>Panels — tap a row to select it</h2>
-    <div id="panels" class="panels"></div>
-
-    <div class="export-row">
-      <button id="export" type="button">Export PNG</button>
-      <button id="export-all" type="button">Export all three</button>
+    <div class="group">
+      <h2>Presets</h2>
+      <div id="presets" class="row"></div>
     </div>
-    <p class="sizes">Exports: 1080 × 1080 · 1080 × 1350 · 1920 × 1080</p>
-    <p id="status" role="status"></p>
-    <p class="fine">Original art made on your device. No Rockstar logos, artwork or fonts — lettering is Anton &amp; Pacifico (SIL OFL). Sample photos are original AI portraits made for this studio.</p>
+
+    <div class="group">
+      <h2>2 · Caption</h2>
+      <label>Title <input id="caption" type="text" maxlength="24" value="VICE COAST"></label>
+      <label>Subtitle <input id="subtitle" type="text" maxlength="60" value="Golden hour. No way out."></label>
+      <label>Tagline <input id="tagline" type="text" maxlength="60" value="Five faces. One last score."></label>
+    </div>
+
+    <div class="group">
+      <h2>Layout &amp; grade</h2>
+      <label>Layout <select id="layout"></select></label>
+      <label>Grade <select id="grade"></select></label>
+    </div>
+
+    <div class="group">
+      <h2>Look &amp; title</h2>
+      <label>Paint <input id="paint" type="range" min="0" max="100" value="50"></label>
+      <label>Grade <input id="gradeSlider" type="range" min="0" max="100" value="70"></label>
+      <label>Halftone <input id="halftone" type="range" min="0" max="100" value="25"></label>
+      <label>Grain <input id="grain" type="range" min="0" max="100" value="30"></label>
+      <label>Glow <input id="glow" type="range" min="0" max="100" value="60"></label>
+    </div>
+
+    <div class="group">
+      <h2>Panel</h2>
+      <label>Selected panel <select id="panel"></select></label>
+      <label>Smart crop <select id="crop">
+        <option value="face">Face</option>
+        <option value="center">Centre</option>
+        <option value="full">Full photo</option>
+      </select></label>
+      <div class="row">
+        <button id="faceBtn" type="button">Face</button>
+        <button id="flipBtn" type="button">Flip</button>
+        <button id="swapBtn" type="button">Swap</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>3 · Export PNG</h2>
+      <div class="row">
+        <button id="export-wide" type="button">Wide 1280×720</button>
+        <button id="export-portrait" type="button">Portrait 1024×1280</button>
+        <button id="export-square" type="button">Square 1080×1080</button>
+      </div>
+      <button id="exportAll" type="button" class="primary">Export all three</button>
+      <p id="status" role="status"></p>
+    </div>
   </section>
-  <section class="preview">
-    <canvas id="cover" width="1080" height="1080" aria-label="The cover"></canvas>
+  <section class="stage" aria-label="Cover preview">
+    <canvas id="cover" width="1080" height="720" aria-label="The cover"></canvas>
+    <p class="hint">The title overlaps the panels — no flat band, ever. Footer is credits only.</p>
   </section>
 </main>
 <script type="module" src="./src/main.js"></script>
