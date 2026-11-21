@@ -1,8 +1,8 @@
 # Vice Coast Cover Studio
 
-[![make.fun](https://img.shields.io/badge/make.fun-bounty-ff3d7e)](https://make.fun/bounty/gta6-cover-art-01)
-[![gta6-cover-art-01](https://img.shields.io/badge/competition-gta6--cover--art--01-7a2d8f)](https://make.fun/bounty/gta6-cover-art-01)
-[![prize $250](https://img.shields.io/badge/prize-%24250-ffc93a)](https://make.fun/bounty/gta6-cover-art-01)
+[![make.fun · gta6-cover-art-01](https://make.fun/badge/gta6-cover-art-01.svg)](https://make.fun/bounty/gta6-cover-art-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
+[![rank](https://make.fun/badge/gta6-cover-art-01/zxpast/makefun-gta6-cover-art-01/rank.svg)](https://make.fun/bounty/gta6-cover-art-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
+[![reward](https://make.fun/badge/gta6-cover-art-01/zxpast/makefun-gta6-cover-art-01/reward.svg)](https://make.fun/bounty/gta6-cover-art-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
 
 An offline browser app that turns your photos into GTA-style multi-panel
 poster cover art — a Vice City neon-sunset grade, chrome striped titles,
